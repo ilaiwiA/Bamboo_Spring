@@ -5,6 +5,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +31,8 @@ public class StockServices {
 
     @Value("${tda.api.key}")
     String API_KEY;
+
+    final TimeZone TIME_ZONE = TimeZone.getTimeZone("America/Chicago");
 
     public Stock getStockQuote(String ticker) {
         RestTemplate restTemplate = new RestTemplate();
@@ -100,7 +103,7 @@ public class StockServices {
 
         ArrayList<Candles> candleList = stockQuotes.getBody().candles;
 
-        Calendar calendar = Calendar.getInstance();
+        Calendar calendar = Calendar.getInstance(TIME_ZONE);
         int DAY_OF_WEEK = calendar.get(Calendar.DAY_OF_WEEK);
         int HOUR_OF_DAY = calendar.get(Calendar.HOUR_OF_DAY);
 
@@ -196,7 +199,7 @@ public class StockServices {
     }
 
     String getDateParameter() {
-        Calendar calendar = Calendar.getInstance();
+        Calendar calendar = Calendar.getInstance(TIME_ZONE);
 
         if (calendar.get(Calendar.DAY_OF_WEEK) == 1 || calendar.get(Calendar.DAY_OF_WEEK) == 7
                 || calendar.get(Calendar.HOUR_OF_DAY) < 6) {
@@ -228,8 +231,8 @@ public class StockServices {
     }
 
     void validateStock(Stock stock) {
-        Calendar calendar = Calendar.getInstance();
-        Calendar stockTime = Calendar.getInstance();
+        Calendar calendar = Calendar.getInstance(TIME_ZONE);
+        Calendar stockTime = Calendar.getInstance(TIME_ZONE);
 
         if (stock.getRegularMarketTradeTimeInLong() == null)
             return;
