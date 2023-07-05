@@ -70,7 +70,7 @@ public class UserStockServices {
 
         user.getPortfolio().setPortfolioQuotes(portfolioQuotes);
 
-        userRepository.saveAndFlush(user);
+        // userRepository.saveAndFlush(user);
         return portfolioQuotes;
     }
 
@@ -110,8 +110,12 @@ public class UserStockServices {
             quoteTime.set(Calendar.MILLISECOND, 0);
             recentDate = quoteTime.getTimeInMillis();
 
+            // ArrayList<Candles> stockList =
+            // stockServices.getHistoricalStockQuotes(stocks.get(i).getTicker(), "",
+            // getDateParameter(getLatestMarketTime(new Date(recentDate))));
+
             ArrayList<Candles> stockList = stockServices.getHistoricalStockQuotes(stocks.get(i).getTicker(), "",
-                    getDateParameter(getLatestMarketTime(recentDate)));
+                    getDateParameter(getLatestMarketTime(new Date(recentDate))));
 
             if (stockList == null)
                 continue;
@@ -131,8 +135,7 @@ public class UserStockServices {
             } catch (Exception e) {
                 index = -1;
             }
-            int stockListIndex = stockList.indexOf(getStockDateCandles(stockList,
-                    recentDate));
+            int stockListIndex = stockList.indexOf(getStockDateCandles(stockList, recentDate));
 
             if (stockListIndex == -1)
                 continue;
@@ -229,7 +232,7 @@ public class UserStockServices {
                 }
             }
         }
-        userRepository.saveAndFlush(user);
+        // userRepository.saveAndFlush(user);
 
         return portfolioQuotes;
     }
@@ -245,7 +248,6 @@ public class UserStockServices {
 
         lastDate = calendar.getTimeInMillis();
 
-        // long currTime = getCurrentTime();
         long currTime = Calendar.getInstance(TIME_ZONE).getTimeInMillis();
 
         int min = calendar.get(Calendar.MINUTE);
@@ -283,7 +285,7 @@ public class UserStockServices {
         calendar.setTime(new Date(portfolioQuotes.get(portfolioQuotes.size() - 1).getDatetime()));
 
         if (stocks.size() == 0) {
-            calendar.setTime(new Date(getLatestMarketTime(calendar.getTimeInMillis())));
+            calendar.setTime(new Date(getLatestMarketDay(calendar.getTimeInMillis())));
         }
 
         calendar.set(Calendar.HOUR_OF_DAY, 6);
@@ -545,7 +547,7 @@ public class UserStockServices {
         return calendar.getTimeInMillis();
     }
 
-    Long getLatestMarketTime(Long date) {
+    Long getLatestMarketDay(Long date) {
         Calendar calendar = Calendar.getInstance(TIME_ZONE);
         calendar.setTimeInMillis(date);
 
@@ -559,30 +561,33 @@ public class UserStockServices {
         return calendar.getTimeInMillis();
     }
 
-    Long getCurrentTime() {
+    Long getLatestMarketTime(Date time) {
         Calendar currentTime = Calendar.getInstance(TIME_ZONE);
+        currentTime.setTime(time);
 
         Calendar minMarketTime = Calendar.getInstance(TIME_ZONE);
+        minMarketTime.setTime(time);
         minMarketTime.set(Calendar.HOUR_OF_DAY, 6);
         minMarketTime.set(Calendar.MINUTE, 0);
         minMarketTime.set(Calendar.SECOND, 0);
         minMarketTime.set(Calendar.MILLISECOND, 0);
 
         Calendar maxMarketTime = Calendar.getInstance(TIME_ZONE);
+        maxMarketTime.setTime(time);
         maxMarketTime.set(Calendar.HOUR_OF_DAY, 18);
         maxMarketTime.set(Calendar.MINUTE, 55);
         maxMarketTime.set(Calendar.SECOND, 0);
         maxMarketTime.set(Calendar.MILLISECOND, 0);
 
+        // if currentTime is before market start
         if (currentTime.getTimeInMillis() < minMarketTime.getTimeInMillis()) {
             maxMarketTime.add(Calendar.DATE, -1);
             return maxMarketTime.getTimeInMillis();
-        } else if (currentTime.getTimeInMillis() > minMarketTime.getTimeInMillis()
-                && currentTime.getTimeInMillis() > maxMarketTime.getTimeInMillis()) {
+        } else if (currentTime.getTimeInMillis() > maxMarketTime.getTimeInMillis()) { // currentTime is after market end
             return maxMarketTime.getTimeInMillis();
         }
 
-        return currentTime.getTimeInMillis();
+        return currentTime.getTimeInMillis(); // currentTime is during market hours
 
     }
 
