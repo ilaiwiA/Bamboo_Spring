@@ -70,7 +70,7 @@ public class UserStockServices {
 
         user.getPortfolio().setPortfolioQuotes(portfolioQuotes);
 
-        // userRepository.saveAndFlush(user);
+        userRepository.saveAndFlush(user);
         return portfolioQuotes;
     }
 
@@ -232,7 +232,7 @@ public class UserStockServices {
                 }
             }
         }
-        // userRepository.saveAndFlush(user);
+        userRepository.saveAndFlush(user);
 
         return portfolioQuotes;
     }
